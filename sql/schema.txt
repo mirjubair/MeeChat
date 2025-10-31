@@ -1,0 +1,39 @@
+-- Create profiles table (linked to Supabase Auth users)
+create table if not exists profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  username text unique,
+  avatar_url text,
+  created_at timestamptz default now()
+);
+
+-- Chats table (simple single chat model)
+create table if not exists chats (
+  id uuid primary key default gen_random_uuid(),
+  title text,
+  is_group boolean default false,
+  metadata jsonb,
+  created_at timestamptz default now()
+);
+
+-- Chat members (for group support)
+create table if not exists chat_members (
+  id uuid primary key default gen_random_uuid(),
+  chat_id uuid references chats(id) on delete cascade,
+  user_id uuid references profiles(id) on delete cascade,
+  is_admin boolean default false,
+  joined_at timestamptz default now()
+);
+
+-- Messages
+create table if not exists messages (
+  id uuid primary key default gen_random_uuid(),
+  chat_id uuid references chats(id) on delete cascade,
+  sender_id uuid references profiles(id),
+  content text,
+  attachments jsonb,
+  created_at timestamptz default now(),
+  edited boolean default false,
+  read_by jsonb default '[]'::jsonb
+);
+
+create index if not exists idx_messages_chat_created_at on messages (chat_id, created_at desc);
