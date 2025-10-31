@@ -1,7 +1,8 @@
 // components/Header.tsx
 'use client';
 
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
+
 import { useRouter } from 'next/navigation';
 import { FiLogOut } from 'react-icons/fi';
 
