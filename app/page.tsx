@@ -1,28 +1,44 @@
-// app/page.tsx
 'use client';
 
-import { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-
-
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { supabase } from '../lib/supabaseClient';
 
 export default function HomePage() {
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
   const router = useRouter();
 
+  // 🔹 Auto-redirect logged-in users to /chat
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) router.push('/chat');
+    };
+    checkSession();
+  }, [router]);
+
+  // 🔹 Send magic link with redirect to /chat
   const sendMagicLink = async () => {
-    if (!email) return alert('Provide an email');
+    if (!email) return alert('Please provide an email');
     setSending(true);
-    const { error } = await supabase.auth.signInWithOtp({ email });
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo:
+          typeof window !== 'undefined'
+            ? `${window.location.origin}/chat`
+            : 'http://localhost:3000/chat',
+      },
+    });
     setSending(false);
     if (error) alert(error.message);
-    else alert('Magic link sent — check your email');
+    else alert('✅ Magic link sent — check your email!');
   };
 
+  // 🔹 Continue anonymously
   const continueAnon = async () => {
-    const { data, error } = await supabase.auth.signInAnonymously();
+    const { error } = await supabase.auth.signInAnonymously();
     if (error) alert(error.message);
     else router.push('/chat');
   };
@@ -31,7 +47,9 @@ export default function HomePage() {
     <main className="h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-md chat-bubble p-8">
         <h1 className="text-3xl font-bold text-accent mb-4">CodeChat</h1>
-        <p className="text-sm text-muted mb-6">Dark coding-style chat (Next.js + Supabase)</p>
+        <p className="text-sm text-muted mb-6">
+          Dark coding-style chat (Next.js + Supabase)
+        </p>
 
         <input
           type="email"
@@ -57,7 +75,8 @@ export default function HomePage() {
         </button>
 
         <div className="mt-6 text-xs text-muted">
-          After signing in, you will land in the chat. To use OAuth (eg GitHub), configure providers in Supabase.
+          After signing in, you’ll land in the chat. To use OAuth (e.g. GitHub),
+          configure providers in Supabase.
         </div>
       </div>
     </main>
