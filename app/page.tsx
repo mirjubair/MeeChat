@@ -1,46 +1,47 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabaseClient';
+import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
   const router = useRouter();
 
-  // 🔹 Auto-redirect logged-in users to /chat
+  // 👇 Redirect user if already logged in
   useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
-      if (data.session) router.push('/chat');
+      if (data.session) {
+        router.replace('/chat');
+      }
     };
     checkSession();
+
+    // 👇 Listen for future login changes (magic link / anon / oauth)
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) router.replace('/chat');
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, [router]);
 
-  // 🔹 Send magic link with redirect to /chat
   const sendMagicLink = async () => {
-    if (!email) return alert('Please provide an email');
+    if (!email) return alert('Provide an email');
     setSending(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo:
-          typeof window !== 'undefined'
-            ? `${window.location.origin}/chat`
-            : 'http://localhost:3000/chat',
-      },
-    });
+    const { error } = await supabase.auth.signInWithOtp({ email });
     setSending(false);
     if (error) alert(error.message);
-    else alert('✅ Magic link sent — check your email!');
+    else alert('Magic link sent — check your email');
   };
 
-  // 🔹 Continue anonymously
   const continueAnon = async () => {
     const { error } = await supabase.auth.signInAnonymously();
     if (error) alert(error.message);
-    else router.push('/chat');
+    // ✅ redirect now handled automatically by listener
   };
 
   return (
@@ -75,8 +76,7 @@ export default function HomePage() {
         </button>
 
         <div className="mt-6 text-xs text-muted">
-          After signing in, you’ll land in the chat. To use OAuth (e.g. GitHub),
-          configure providers in Supabase.
+          After signing in, you will land in the chat. To use OAuth (e.g., GitHub), configure providers in Supabase.
         </div>
       </div>
     </main>
