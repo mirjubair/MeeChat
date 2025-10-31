@@ -18,7 +18,8 @@ export default function ChatBox({ user }: { user: any }) {
       const { data, error } = await supabase
         .from('messages')
         .select('*')
-        .order('created_at', { ascending: true })
+        .order('inserted_at', { ascending: true })
+
         .limit(500);
 
       if (!error && data) setMessages(data);
