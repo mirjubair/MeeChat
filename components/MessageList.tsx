@@ -1,42 +1,42 @@
-// components/MessageList.tsx
-'use client';
-
-import React, { useEffect, useRef } from 'react';
-import dayjs from 'dayjs';
-
-interface Message {
-  id: string;
-  content: string;
-  sender_id?: string | null;
-  created_at: string;
-  attachments?: any;
-}
-
-export default function MessageList({ messages, currentUser }: { messages: Message[]; currentUser: any; }) {
-  const bottomRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
+export default function MessageList({ messages, currentUser }: { messages: any[], currentUser: any }) {
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-3">
-      {messages.map((m) => {
-        const mine = m.sender_id === currentUser?.id;
-        return (
-          <div key={m.id} className={mine ? 'flex justify-end' : 'flex justify-start'}>
-            <div className={`max-w-[70%] p-3 rounded-lg ${mine ? 'bg-[rgba(0,230,168,0.06)]' : 'bg-white/3'}`}>
-              <div className="text-xs text-muted mb-1 flex items-center justify-between">
-                <div className="font-semibold text-sm">{(m.sender_id ?? 'anon').slice(0,6)}</div>
-                <div className="text-xs">{dayjs(m.created_at).format('HH:mm')}</div>
+    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+      {messages.map((msg) => (
+        <div
+          key={msg.id}
+          className={`flex ${msg.user_id === currentUser?.id ? 'justify-end' : 'justify-start'}`}
+        >
+          <div
+            className={`max-w-[75%] px-4 py-2 rounded-2xl shadow-sm ${
+              msg.user_id === currentUser?.id
+                ? 'bg-indigo-500 text-white rounded-br-none'
+                : 'bg-gray-100 text-gray-800 rounded-bl-none'
+            }`}
+          >
+            {msg.file_url ? (
+              <div className="flex flex-col gap-2">
+                {msg.file_url.match(/\.(jpg|jpeg|png|gif)$/i) ? (
+                  <img src={msg.file_url} alt="file" className="max-h-60 rounded-lg" />
+                ) : (
+                  <a
+                    href={msg.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline text-sm text-blue-200 hover:text-blue-100"
+                  >
+                    📎 Download file
+                  </a>
+                )}
               </div>
-              <div className="whitespace-pre-wrap text-sm">{m.content}</div>
-              {m.attachments && <div className="mt-2 text-xs text-muted">Attachments: {JSON.stringify(m.attachments)}</div>}
-            </div>
+            ) : (
+              <p>{msg.content}</p>
+            )}
+            <span className="text-xs opacity-70 block mt-1">
+              {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
           </div>
-        );
-      })}
-      <div ref={bottomRef} />
+        </div>
+      ))}
     </div>
   );
 }

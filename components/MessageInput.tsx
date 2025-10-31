@@ -1,46 +1,49 @@
-// components/MessageInput.tsx
 'use client';
 
 import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
-export default function MessageInput({ currentUser, onSent }: { currentUser: any; onSent: () => void }) {
-  const [newMessage, setNewMessage] = useState('');
+export default function MessageInput({
+  currentUser,
+  onSent, // ✅ now accepted
+}: {
+  currentUser: any;
+  onSent?: () => void; // ✅ optional so no error
+}) {
+  const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
 
   const sendMessage = async () => {
-    if (!newMessage.trim()) return;
+    if (!text.trim()) return;
     setSending(true);
     const { error } = await supabase.from('messages').insert({
-      user_id: currentUser?.id,
-      content: newMessage.trim(),
+      content: text,
+      user_id: currentUser?.id || 'anonymous',
     });
     setSending(false);
-
-    if (error) {
-      alert('Send failed: ' + error.message);
+    if (!error) {
+      setText('');
+      onSent?.(); // ✅ safely call if passed
     } else {
-      setNewMessage('');
-      onSent();
+      alert(error.message);
     }
   };
 
   return (
-    <div className="p-4 flex border-t border-white/10 bg-code-panel">
+    <div className="p-3 border-t border-white/10 flex items-center gap-2 bg-code-panel">
       <input
-        type="text"
-        value={newMessage}
-        onChange={(e) => setNewMessage(e.target.value)}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Type a message..."
+        className="flex-1 bg-transparent border border-white/5 rounded p-2 focus:outline-none text-sm"
         onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-        placeholder="Type your message..."
-        className="flex-1 p-2 rounded bg-black/40 focus:outline-none"
       />
       <button
         onClick={sendMessage}
         disabled={sending}
-        className="ml-2 px-4 py-2 rounded bg-accent text-black font-semibold"
+        className="bg-accent text-black font-semibold px-4 py-2 rounded"
       >
-        {sending ? '...' : 'Send'}
+        Send
       </button>
     </div>
   );
