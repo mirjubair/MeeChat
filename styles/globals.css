@@ -1,44 +1,33 @@
-/* styles/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root{
-  --bg: #0b0f14;
-  --panel: #0f1720;
-  --accent: #00e6a8;
-  --muted: #7b8a94;
-}
-
-html, body, #__next {
-  height: 100%;
-}
-
+html,
 body {
-  background: var(--bg);
-  color: #e6eef3;
-  font-family: "Fira Code", ui-monospace, SFMono-Regular, monospace;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  height: 100%;
+  margin: 0;
+  background-color: #0a0f14;
+  color: white;
+  font-family: 'Inter', sans-serif;
 }
 
-.chat-bubble {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid rgba(255,255,255,0.03);
-  box-shadow: 0 6px 18px rgba(2,6,23,0.6);
-  border-radius: 10px;
+.text-accent {
+  color: #00d8ff;
 }
 
-a { color: var(--accent); text-decoration: none; }
-.small-muted { color: var(--muted); font-size: 12px; }
+.bg-accent {
+  background-color: #00d8ff;
+}
 
 ::-webkit-scrollbar {
-  height: 8px;
-  width: 8px;
+  width: 6px;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.06);
+  background: #00d8ff;
   border-radius: 10px;
 }
 
-
+::-webkit-scrollbar-track {
+  background: transparent;
+}

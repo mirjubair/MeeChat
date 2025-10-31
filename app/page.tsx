@@ -1,6 +1,7 @@
+// app/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
@@ -9,30 +10,22 @@ export default function HomePage() {
   const [sending, setSending] = useState(false);
   const router = useRouter();
 
-  // 👇 Redirect user if already logged in
+  // ✅ Detect magic link session from URL
   useEffect(() => {
-    const checkSession = async () => {
+    const handleRedirectSession = async () => {
       const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        router.replace('/chat');
-      }
+      if (data.session) router.push('/chat');
     };
-    checkSession();
-
-    // 👇 Listen for future login changes (magic link / anon / oauth)
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) router.replace('/chat');
-    });
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
+    handleRedirectSession();
   }, [router]);
 
   const sendMagicLink = async () => {
     if (!email) return alert('Provide an email');
     setSending(true);
-    const { error } = await supabase.auth.signInWithOtp({ email });
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: `${window.location.origin}` } // redirects back to this page
+    });
     setSending(false);
     if (error) alert(error.message);
     else alert('Magic link sent — check your email');
@@ -41,42 +34,40 @@ export default function HomePage() {
   const continueAnon = async () => {
     const { error } = await supabase.auth.signInAnonymously();
     if (error) alert(error.message);
-    // ✅ redirect now handled automatically by listener
+    else router.push('/chat');
   };
 
   return (
-    <main className="h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-md chat-bubble p-8">
-        <h1 className="text-3xl font-bold text-accent mb-4">CodeChat</h1>
-        <p className="text-sm text-muted mb-6">
-          Dark coding-style chat (Next.js + Supabase)
-        </p>
+    <main className="h-screen flex items-center justify-center p-6 bg-gradient-to-br from-gray-900 to-black text-white">
+      <div className="w-full max-w-md bg-gray-800/50 backdrop-blur-xl p-8 rounded-2xl shadow-xl">
+        <h1 className="text-3xl font-bold mb-4 text-center">MyChatApp 💬</h1>
+        <p className="text-sm text-gray-400 mb-6 text-center">Secure login to chat</p>
 
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          className="w-full mb-3 px-3 py-2 bg-code-panel rounded focus:outline-none"
+          className="w-full mb-3 px-3 py-2 bg-gray-700 rounded focus:outline-none"
         />
 
         <button
           onClick={sendMagicLink}
           disabled={sending}
-          className="w-full py-2 rounded bg-accent text-black font-semibold mb-2"
+          className="w-full py-2 mb-3 rounded bg-blue-500 hover:bg-blue-600 font-semibold"
         >
           {sending ? 'Sending...' : 'Send Magic Link'}
         </button>
 
         <button
           onClick={continueAnon}
-          className="w-full py-2 rounded border border-white/5 text-sm"
+          className="w-full py-2 rounded border border-gray-600 hover:bg-gray-700 text-sm"
         >
           Continue anonymously
         </button>
 
-        <div className="mt-6 text-xs text-muted">
-          After signing in, you will land in the chat. To use OAuth (e.g., GitHub), configure providers in Supabase.
+        <div className="mt-6 text-xs text-gray-400 text-center">
+          After signing in, you’ll land in chat automatically.
         </div>
       </div>
     </main>

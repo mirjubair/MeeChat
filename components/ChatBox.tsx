@@ -32,28 +32,21 @@ export default function ChatBox({ user }: { user: any }) {
       })
       .subscribe();
 
-    return () => {
-      channel?.unsubscribe?.();
-    };
+    return () => channel?.unsubscribe?.();
   }, []);
 
   return (
-    <div className="flex flex-col h-[90vh] w-full bg-gradient-to-b from-gray-50 to-gray-200 rounded-2xl shadow-lg overflow-hidden">
-      <div className="bg-indigo-600 text-white px-6 py-4 flex justify-between items-center">
-        <h2 className="text-lg font-semibold">💬 Chat Room</h2>
-        <div className="flex gap-3">
-          <button className="bg-indigo-500 hover:bg-indigo-400 text-sm px-3 py-1 rounded-md">📞 Call</button>
-          <button className="bg-indigo-500 hover:bg-indigo-400 text-sm px-3 py-1 rounded-md">🎥 Video</button>
-        </div>
-      </div>
-
+    <div className="flex flex-col h-full bg-[#0a0f14] text-gray-200">
       {loading ? (
-        <div className="p-6 text-center text-gray-500">Loading messages...</div>
+        <div className="p-6 text-center">Loading messages...</div>
       ) : (
         <>
-          <MessageList messages={messages} currentUser={user} />
-          <MessageInput currentUser={user} onSent={() => {}} />
-
+          <div className="flex-1 overflow-y-auto p-4">
+            <MessageList messages={messages} currentUser={user} />
+          </div>
+          <div className="border-t border-white/10">
+            <MessageInput currentUser={user} />
+          </div>
         </>
       )}
     </div>
