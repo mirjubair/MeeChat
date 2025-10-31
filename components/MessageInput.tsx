@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 
 export default function MessageInput({ chatId, currentUser, onSent }: { chatId?: string; currentUser: any; onSent?: () => void; }) {
   const [text, setText] = useState('');
